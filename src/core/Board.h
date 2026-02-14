@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <set>
 using namespace std;
 
 class Board
@@ -12,9 +13,12 @@ private:
 public:
     Board(int n, const vector<vector<int>> &color);
 
+    int countColorId() const;
+
     void placeQueen(int row, int col);
     void removeQueen(int row, int col);
     bool isValidWholeBoard() const;
+    bool isValidPos(int row, int col) const; // tentatif
 
     const vector<vector<int>> &getGrid() const;
     int getSize() const;

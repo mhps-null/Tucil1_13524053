@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include "Board.h"
 
 class Solver
@@ -14,11 +15,12 @@ private:
     bool efficientMode = false;
 
 public:
-    Solver(const vector<vector<int>> &color, bool efficientMode);
+    Solver(const vector<vector<int>> &color, int historyInterval, bool efficientMode);
 
     void solve();
 
     const Board &getBoard() const;
     const vector<Board> &getHistory() const;
     long long getIterationCount() const;
+    void recordIteration();
 };

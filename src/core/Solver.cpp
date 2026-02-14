@@ -1,23 +1,18 @@
 #include "Solver.h"
 
-Solver::Solver(const vector<vector<int>> &color, bool efficientMode)
-    : board(color.size(), color), efficientMode(efficientMode) {}
+Solver::Solver(const vector<vector<int>> &color, int historyInterval, bool efficientMode)
+    : board(color.size(), color), historyInterval(historyInterval > 0 ? historyInterval : 1), efficientMode(efficientMode) {}
 
 void Solver::solve()
 {
     int n = board.getSize();
-    int totalSize = n * n;
 
     if (!efficientMode)
     {
+        int totalSize = n * n;
         while (true)
         {
-            iterationCount++;
-
-            if (iterationCount % historyInterval == 0)
-            {
-                history.push_back(board);
-            }
+            recordIteration();
 
             if (board.isValidWholeBoard())
             {
@@ -51,8 +46,47 @@ void Solver::solve()
     }
     else
     {
+        vector<int> permutation(n);
+        for (int i = 0; i < n; i++)
+        {
+            permutation[i] = i;
+        }
+
+        do
+        {
+            recordIteration();
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    board.removeQueen(i, j);
+                }
+            }
+
+            for (int row = 0; row < n; row++)
+            {
+                board.placeQueen(row, permutation[row]);
+            }
+
+            if (board.isValidWholeBoard())
+            {
+                solutionFound = true;
+                return;
+            }
+        } while (next_permutation(permutation.begin(), permutation.end()));
     }
 }
+
+void Solver::recordIteration()
+{
+    iterationCount++;
+
+    if (iterationCount % historyInterval == 0 && historyInterval > 0)
+    {
+        history.push_back(board);
+    }
+};
 
 const Board &Solver::getBoard() const
 {

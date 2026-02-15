@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QColor>
 #include <QThread>
+#include <QMouseEvent>
 
 #include <fstream>
 #include <vector>
@@ -19,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->tableWidgetColor->setMouseTracking(true);
+    ui->tableWidgetColor->viewport()->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -33,15 +37,13 @@ void MainWindow::renderBoard()
 
     const Board &board = *currentBoard;
 
-    if (ui->boardWidget->layout() != nullptr)
+    QGridLayout *layout =
+        static_cast<QGridLayout *>(ui->boardWidget->layout());
+
+    while (QLayoutItem *item = layout->takeAt(0))
     {
-        QLayoutItem *item;
-        while ((item = ui->boardWidget->layout()->takeAt(0)) != nullptr)
-        {
-            delete item->widget();
-            delete item;
-        }
-        delete ui->boardWidget->layout();
+        delete item->widget();
+        delete item;
     }
 
     int n = board.getSize();
@@ -49,19 +51,13 @@ void MainWindow::renderBoard()
     const std::vector<std::vector<int>> &grid = board.getGrid();
     const std::vector<std::vector<int>> &color = board.getColor();
 
-    QGridLayout *layout = new QGridLayout;
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSizeConstraint(QLayout::SetFixedSize);
-
     for (int row = 0; row < n; ++row)
     {
         for (int col = 0; col < n; ++col)
         {
             QLabel *cell = new QLabel;
-            cell->setFixedSize(40, 40);
             cell->setAlignment(Qt::AlignCenter);
-            cell->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            cell->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
             int colorId = color[row][col];
             QColor cellColor = QColor::fromHsv((colorId * 40) % 360, 160, 220);
@@ -86,8 +82,6 @@ void MainWindow::renderBoard()
             layout->addWidget(cell, row, col);
         }
     }
-
-    ui->boardWidget->setLayout(layout);
 }
 
 void MainWindow::updateStatus(long long iteration, bool solved, qint64 time)
@@ -102,14 +96,23 @@ void MainWindow::updateStatus(long long iteration, bool solved, qint64 time)
 
 void MainWindow::on_pushButtonSolve_clicked()
 {
-    solverActive = true;
 
     if (!currentBoard.has_value())
+    {
+        ui->labelState->setText("No board available");
         return;
+    }
+
+    if (ui->stackedWidget->currentWidget() != ui->boardWidget)
+    {
+        ui->labelState->setText("Build or import board first");
+        return;
+    }
 
     if (solverThread != nullptr)
         return;
 
+    solverActive = true;
     bool effMode = ui->checkBoxEff->isChecked();
 
     solverThread = new QThread;
@@ -153,7 +156,7 @@ void MainWindow::on_pushButtonSolve_clicked()
     solverThread->start();
 }
 
-void MainWindow::on_pushButtonReset_clicked()
+void MainWindow::on_pushButtonStop_clicked()
 {
     solverActive = false;
 
@@ -164,19 +167,6 @@ void MainWindow::on_pushButtonReset_clicked()
     {
         solverThread->quit();
         solverThread->wait();
-    }
-
-    currentBoard.reset();
-
-    if (ui->boardWidget->layout() != nullptr)
-    {
-        QLayoutItem *item;
-        while ((item = ui->boardWidget->layout()->takeAt(0)) != nullptr)
-        {
-            delete item->widget();
-            delete item;
-        }
-        delete ui->boardWidget->layout();
     }
 
     ui->labelIteration->setText("0");
@@ -263,6 +253,88 @@ void MainWindow::on_pushButtonImport_clicked()
     currentBoard = Board(n, color);
 
     renderBoard();
+
+    ui->stackedWidget->setCurrentWidget(ui->boardWidget);
+}
+
+void MainWindow::on_pushButtonGenerate_clicked()
+{
+    int n = ui->spinBoxN->value();
+
+    ui->tableWidgetColor->clear();
+    ui->tableWidgetColor->setRowCount(n);
+    ui->tableWidgetColor->setColumnCount(n);
+
+    ui->tableWidgetColor->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableWidgetColor->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            QTableWidgetItem *item = new QTableWidgetItem;
+            item->setTextAlignment(Qt::AlignCenter);
+            ui->tableWidgetColor->setItem(i, j, item);
+        }
+    }
+
+    ui->stackedWidget->setCurrentWidget(ui->inputPage);
+}
+
+void MainWindow::on_pushButtonBuildBoard_clicked()
+{
+    int n = ui->tableWidgetColor->rowCount();
+    if (n == 0)
+        return;
+
+    std::vector<std::vector<int>> color(n, std::vector<int>(n));
+
+    QMap<QString, int> colorMap;
+    int nextId = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            QTableWidgetItem *item = ui->tableWidgetColor->item(i, j);
+
+            if (!item)
+            {
+                ui->labelState->setText("Incomplete input");
+                return;
+            }
+
+            QVariant data = item->data(Qt::UserRole);
+
+            if (!data.isValid())
+            {
+                ui->labelState->setText("All cells must be colored");
+                return;
+            }
+
+            QColor cellColor = data.value<QColor>();
+            QString key = cellColor.name();
+
+            if (!colorMap.contains(key))
+            {
+                colorMap[key] = nextId++;
+            }
+
+            color[i][j] = colorMap[key];
+        }
+    }
+
+    currentBoard = Board(n, color);
+    renderBoard();
+
+    ui->stackedWidget->setCurrentWidget(ui->boardWidget);
+    ui->labelState->setText("Board created from painted colors");
+}
+
+void MainWindow::on_pushButtonChangeColor_clicked()
+{
+    int hue = QRandomGenerator::global()->bounded(360);
+    currentPaintColor = QColor::fromHsv(hue, 160, 220);
 }
 
 void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time)
@@ -272,10 +344,66 @@ void MainWindow::onSolveFinished(const Board &result, long long iteration, bool 
 
     currentBoard = result;
 
-    if (solved)
-        renderBoard();
+    renderBoard();
 
     updateStatus(iteration, solved, time);
 
     solverActive = false;
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == ui->tableWidgetColor->viewport())
+    {
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            mousePressed = true;
+
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+            QModelIndex index =
+                ui->tableWidgetColor->indexAt(mouseEvent->pos());
+
+            if (index.isValid())
+            {
+                QTableWidgetItem *item =
+                    ui->tableWidgetColor->item(index.row(), index.column());
+
+                if (!item)
+                {
+                    item = new QTableWidgetItem;
+                    ui->tableWidgetColor->setItem(index.row(), index.column(), item);
+                }
+
+                item->setBackground(currentPaintColor);
+                item->setData(Qt::UserRole, currentPaintColor);
+            }
+        }
+
+        if (event->type() == QEvent::MouseMove && mousePressed)
+        {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+            QModelIndex index =
+                ui->tableWidgetColor->indexAt(mouseEvent->pos());
+
+            if (index.isValid())
+            {
+                QTableWidgetItem *item =
+                    ui->tableWidgetColor->item(index.row(), index.column());
+
+                if (!item)
+                {
+                    item = new QTableWidgetItem;
+                    ui->tableWidgetColor->setItem(index.row(), index.column(), item);
+                }
+
+                item->setBackground(currentPaintColor);
+                item->setData(Qt::UserRole, currentPaintColor);
+            }
+        }
+
+        if (event->type() == QEvent::MouseButtonRelease)
+            mousePressed = false;
+    }
+
+    return QMainWindow::eventFilter(obj, event);
 }

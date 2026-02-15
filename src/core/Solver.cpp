@@ -88,6 +88,18 @@ void Solver::solve()
         } while (next_permutation(permutation.begin(), permutation.end()));
     }
     qint64 time = timer.elapsed();
+
+    if (!solutionFound)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                board.removeQueen(i, j);
+            }
+        }
+    }
+
     emit finished(board, iterationCount, solutionFound, time);
 }
 

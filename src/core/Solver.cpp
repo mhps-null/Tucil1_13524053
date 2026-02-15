@@ -12,6 +12,9 @@ void Solver::solve()
         int totalSize = n * n;
         while (true)
         {
+            if (stopRequested)
+                break;
+
             recordIteration();
 
             if (board.isValidWholeBoard())
@@ -54,6 +57,9 @@ void Solver::solve()
 
         do
         {
+            if (stopRequested)
+                break;
+
             recordIteration();
 
             for (int i = 0; i < n; i++)

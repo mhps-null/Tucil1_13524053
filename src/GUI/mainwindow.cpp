@@ -91,40 +91,79 @@ void MainWindow::updateStatus(long long iteration, bool solved)
 
 void MainWindow::on_pushButtonSolve_clicked()
 {
+    solverActive = true;
+
     if (!currentBoard.has_value())
+        return;
+
+    if (solverThread != nullptr)
         return;
 
     int interval = ui->spinBoxInterval->value();
     bool effMode = ui->checkBoxEff->isChecked();
 
-    QThread* thread = new QThread;
-    Solver* solver = new Solver(*currentBoard, interval, effMode);
+    solverThread = new QThread;
+    solverWorker = new Solver(*currentBoard, interval, effMode);
 
+    solverWorker->moveToThread(solverThread);
 
-    solver->moveToThread(thread);
+    connect(solverThread, &QThread::started,
+            solverWorker, &Solver::solve);
 
-    connect(thread, &QThread::started,
-            solver, &Solver::solve);
-
-    connect(solver, &Solver::finished,
+    connect(solverWorker, &Solver::finished,
             this, &MainWindow::onSolveFinished);
 
-    connect(solver, &Solver::progress,
+    connect(solverWorker, &Solver::progress,
             this, [this](long long iter)
+            { if (!solverActive) return; ui->labelIteration->setText(QString::number(iter)); });
+
+    connect(solverWorker, &Solver::finished,
+            solverThread, &QThread::quit);
+
+    connect(solverThread, &QThread::finished,
+            solverWorker, &QObject::deleteLater);
+
+    connect(solverThread, &QThread::finished,
+            solverThread, &QObject::deleteLater);
+
+    connect(solverThread, &QThread::finished,
+            this, [this]()
             {
-                ui->labelIteration->setText(QString::number(iter));
-            });
+                solverThread = nullptr;
+                solverWorker = nullptr; });
 
-    connect(solver, &Solver::finished,
-            thread, &QThread::quit);
+    solverThread->start();
+}
 
-    connect(thread, &QThread::finished,
-            solver, &QObject::deleteLater);
+void MainWindow::on_pushButtonReset_clicked()
+{
+    solverActive = false;
 
-    connect(thread, &QThread::finished,
-            thread, &QObject::deleteLater);
+    if (solverWorker != nullptr)
+        solverWorker->requestStop();
 
-    thread->start();
+    if (solverThread != nullptr)
+    {
+        solverThread->quit();
+        solverThread->wait();
+    }
+
+    currentBoard.reset();
+
+    if (ui->boardWidget->layout() != nullptr)
+    {
+        QLayoutItem *item;
+        while ((item = ui->boardWidget->layout()->takeAt(0)) != nullptr)
+        {
+            delete item->widget();
+            delete item;
+        }
+        delete ui->boardWidget->layout();
+    }
+
+    ui->labelIteration->setText("0");
+    ui->labelState->setText("Idle");
+    ui->lineEditPath->clear();
 }
 
 void MainWindow::on_pushButtonBrowse_clicked()
@@ -209,7 +248,15 @@ void MainWindow::on_pushButtonImport_clicked()
 
 void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved)
 {
+    if (!solverActive)
+        return;
+
     currentBoard = result;
-    if(solved) renderBoard();
+
+    if (solved)
+        renderBoard();
+
     updateStatus(iteration, solved);
+
+    solverActive = false;
 }

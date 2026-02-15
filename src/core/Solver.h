@@ -13,6 +13,8 @@ private:
     long long iterationCount = 0;
     int historyInterval = 100;
 
+    std::atomic<bool> stopRequested{false};
+    
     bool solutionFound = false;
     bool efficientMode = false;
 
@@ -24,6 +26,8 @@ public:
     long long getIterationCount() const;
     bool getSolFound() const;
     void recordIteration();
+
+    void requestStop() { stopRequested = true; }
 
 public slots:
     void solve();

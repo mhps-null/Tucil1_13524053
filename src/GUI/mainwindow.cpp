@@ -60,6 +60,7 @@ void MainWindow::renderBoard()
         {
             QLabel *cell = new QLabel;
             cell->setFixedSize(40, 40);
+            cell->setAlignment(Qt::AlignCenter);
             cell->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
             int colorId = color[row][col];
@@ -73,6 +74,14 @@ void MainWindow::renderBoard()
 
             if (grid[row][col] == 1)
                 cell->setText("♛");
+            cell->setStyleSheet(
+                QString("background-color: %1;"
+                        "border-right: 1px solid black;"
+                        "border-bottom: 1px solid black;"
+                        "font-size: 24px;"
+                        "font-weight: bold;"
+                        "color: black;")
+                    .arg(cellColor.name()));
 
             layout->addWidget(cell, row, col);
         }

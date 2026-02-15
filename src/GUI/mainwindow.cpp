@@ -110,11 +110,10 @@ void MainWindow::on_pushButtonSolve_clicked()
     if (solverThread != nullptr)
         return;
 
-    int interval = ui->spinBoxInterval->value();
     bool effMode = ui->checkBoxEff->isChecked();
 
     solverThread = new QThread;
-    solverWorker = new Solver(*currentBoard, interval, effMode);
+    solverWorker = new Solver(*currentBoard, effMode);
 
     solverWorker->moveToThread(solverThread);
 
@@ -124,9 +123,17 @@ void MainWindow::on_pushButtonSolve_clicked()
     connect(solverWorker, &Solver::finished,
             this, &MainWindow::onSolveFinished);
 
-    connect(solverWorker, &Solver::progress,
-            this, [this](long long iter)
-            { if (!solverActive) return; ui->labelIteration->setText(QString::number(iter)); });
+    connect(solverWorker, &Solver::boardUpdated,
+            this,
+            [this](const Board &snapshot, long long iter)
+            {
+                if (!solverActive)
+                    return;
+
+                currentBoard = snapshot;
+                renderBoard();
+                ui->labelIteration->setText(QString::number(iter));
+            });
 
     connect(solverWorker, &Solver::finished,
             solverThread, &QThread::quit);

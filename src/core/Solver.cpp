@@ -1,13 +1,14 @@
 #include "Solver.h"
-#include <QElapsedTimer>
 
-Solver::Solver(const Board &board, int historyInterval, bool efficientMode)
-    : board(board), historyInterval(historyInterval > 0 ? historyInterval : 1), efficientMode(efficientMode) {}
+Solver::Solver(const Board &board, bool efficientMode)
+    : board(board), efficientMode(efficientMode) {}
 
 void Solver::solve()
 {
     QElapsedTimer timer;
     timer.start();
+
+    frameTimer.start();
 
     int n = board.getSize();
 
@@ -94,9 +95,10 @@ void Solver::recordIteration()
 {
     iterationCount++;
 
-    if (iterationCount % historyInterval == 0 && historyInterval > 0)
+    if (frameTimer.elapsed() >= 30)
     {
-        history.push_back(board);
+        emit boardUpdated(board, iterationCount);
+        frameTimer.restart();
     }
 
     emit progress(iterationCount);
@@ -105,11 +107,6 @@ void Solver::recordIteration()
 const Board &Solver::getBoard() const
 {
     return board;
-};
-
-const vector<Board> &Solver::getHistory() const
-{
-    return history;
 };
 
 long long Solver::getIterationCount() const

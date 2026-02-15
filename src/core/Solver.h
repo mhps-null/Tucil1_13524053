@@ -1,9 +1,11 @@
 #pragma once
 #include <algorithm>
+#include <QObject>
 #include "Board.h"
 
-class Solver
+class Solver : public QObject
 {
+    Q_OBJECT
 private:
     Board board;
     vector<Board> history;
@@ -15,12 +17,18 @@ private:
     bool efficientMode = false;
 
 public:
-    Solver(const vector<vector<int>> &color, int historyInterval, bool efficientMode);
-
-    void solve();
+    explicit Solver(const Board &board, int historyInterval, bool efficientMode);
 
     const Board &getBoard() const;
     const vector<Board> &getHistory() const;
     long long getIterationCount() const;
+    bool getSolFound() const;
     void recordIteration();
+
+public slots:
+    void solve();
+
+signals:
+    void finished(const Board result, long long iterationCount, bool solutionFound);
+    void progress(long long iteration);
 };

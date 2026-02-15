@@ -1,7 +1,7 @@
 #include "Solver.h"
 
-Solver::Solver(const vector<vector<int>> &color, int historyInterval, bool efficientMode)
-    : board(color.size(), color), historyInterval(historyInterval > 0 ? historyInterval : 1), efficientMode(efficientMode) {}
+Solver::Solver(const Board &board, int historyInterval, bool efficientMode)
+    : board(board), historyInterval(historyInterval > 0 ? historyInterval : 1), efficientMode(efficientMode) {}
 
 void Solver::solve()
 {
@@ -17,7 +17,7 @@ void Solver::solve()
             if (board.isValidWholeBoard())
             {
                 solutionFound = true;
-                return;
+                break;
             }
 
             bool keepGoing = true;
@@ -72,10 +72,11 @@ void Solver::solve()
             if (board.isValidWholeBoard())
             {
                 solutionFound = true;
-                return;
+                break;
             }
         } while (next_permutation(permutation.begin(), permutation.end()));
     }
+    emit finished(board, iterationCount, solutionFound);
 }
 
 void Solver::recordIteration()
@@ -86,6 +87,8 @@ void Solver::recordIteration()
     {
         history.push_back(board);
     }
+
+    emit progress(iterationCount);
 };
 
 const Board &Solver::getBoard() const
@@ -101,4 +104,9 @@ const vector<Board> &Solver::getHistory() const
 long long Solver::getIterationCount() const
 {
     return iterationCount;
+}
+
+bool Solver::getSolFound() const
+{
+    return solutionFound;
 }

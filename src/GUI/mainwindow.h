@@ -1,11 +1,15 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
+#pragma once
 #include <QMainWindow>
-#include <vector>
+#include <optional>
+
+#include "core/Board.h"
+#include "core/Solver.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui
+{
+    class MainWindow;
+}
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -17,12 +21,16 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_solve_clicked();
+    void on_pushButtonSolve_clicked();
+    void on_pushButtonBrowse_clicked();
+    void on_pushButtonImport_clicked();
+    void onSolveFinished(const Board &result, long long iteration, bool solved);
 
 private:
     Ui::MainWindow *ui;
 
-    void renderBoard(const std::vector<std::vector<int>>& grid);
-};
+    std::optional<Board> currentBoard;
 
-#endif // MAINWINDOW_H
+    void renderBoard();
+    void updateStatus(long long iteration, bool solved);
+};

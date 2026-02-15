@@ -210,6 +210,12 @@ const vector<vector<int>> &Board::getGrid() const
     return grid;
 }
 
+// getter color
+const vector<vector<int>> &Board::getColor() const
+{
+    return color;
+}
+
 // getter size
 int Board::getSize() const
 {

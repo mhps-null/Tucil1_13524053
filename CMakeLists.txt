@@ -18,6 +18,13 @@ qt_add_executable(Tucil1_13524053
     src/core/Board.cpp
     src/core/Solver.cpp
     src/GUI/mainwindow.h src/GUI/mainwindow.cpp src/GUI/mainwindow.ui
+
+    # HELPER
+    src/helper/FileParser.cpp
+)
+
+target_compile_definitions(Tucil1_13524053 PRIVATE
+    PROJECT_ROOT="${CMAKE_SOURCE_DIR}"
 )
 
 target_include_directories(Tucil1_13524053 PRIVATE

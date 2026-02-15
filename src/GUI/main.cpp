@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     MainWindow w;
-    w.show(); // ← WAJIB ADA
+    w.show();
 
-    return app.exec(); // ← WAJIB ADA
+    return app.exec();
 }

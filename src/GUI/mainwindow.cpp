@@ -1,9 +1,19 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 #include <QGridLayout>
 #include <QLabel>
 #include <QFrame>
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-// #include "core/Solver.h"
+#include <QFileDialog>
+#include <QString>
+#include <QDir>
+#include <QColor>
+#include <QThread>
+
+#include <fstream>
+#include <vector>
+#include <string>
+#include <cctype>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -16,53 +26,190 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// void MainWindow::renderBoard(const std::vector<std::vector<int>> &grid)
-// {
-//     if (ui->boardWidget->layout() != nullptr)
-//     {
-//         QLayoutItem *item;
-//         while ((item = ui->boardWidget->layout()->takeAt(0)) != nullptr)
-//         {
-//             delete item->widget();
-//             delete item;
-//         }
-//         delete ui->boardWidget->layout();
-//     }
+void MainWindow::renderBoard()
+{
+    if (!currentBoard.has_value())
+        return;
 
-//     int n = grid.size();
-//     QGridLayout *layout = new QGridLayout;
-//     layout->setSpacing(0);
+    const Board &board = *currentBoard;
 
-//     for (int row = 0; row < n; ++row)
-//     {
-//         for (int col = 0; col < n; ++col)
-//         {
+    if (ui->boardWidget->layout() != nullptr)
+    {
+        QLayoutItem *item;
+        while ((item = ui->boardWidget->layout()->takeAt(0)) != nullptr)
+        {
+            delete item->widget();
+            delete item;
+        }
+        delete ui->boardWidget->layout();
+    }
 
-//             QLabel *cell = new QLabel;
-//             cell->setFixedSize(40, 40);
-//             cell->setAlignment(Qt::AlignCenter);
+    int n = board.getSize();
 
-//             if ((row + col) % 2 == 0)
-//                 cell->setStyleSheet("background-color: #EEE;");
-//             else
-//                 cell->setStyleSheet("background-color: #555; color: white;");
+    const std::vector<std::vector<int>> &grid = board.getGrid();
+    const std::vector<std::vector<int>> &color = board.getColor();
 
-//             if (grid[row][col] == 1)
-//                 cell->setText("♛");
+    QGridLayout *layout = new QGridLayout;
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSizeConstraint(QLayout::SetFixedSize);
 
-//             layout->addWidget(cell, row, col);
-//         }
-//     }
+    for (int row = 0; row < n; ++row)
+    {
+        for (int col = 0; col < n; ++col)
+        {
+            QLabel *cell = new QLabel;
+            cell->setFixedSize(40, 40);
+            cell->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-//     ui->boardWidget->setLayout(layout);
-// }
+            int colorId = color[row][col];
+            QColor cellColor = QColor::fromHsv((colorId * 40) % 360, 160, 220);
 
-// void MainWindow::on_pushButton_solve_clicked()
-// {
-//     int n = ui->spinBoxN->value();
+            cell->setStyleSheet(
+                QString("background-color: %1;"
+                        "border-right: 1px solid black;"
+                        "border-bottom: 1px solid black;")
+                    .arg(cellColor.name()));
 
-//     Solver solver(n);
-//     solver.solve();
+            if (grid[row][col] == 1)
+                cell->setText("♛");
 
-//     renderBoard(solver.getBoard().getGrid());
-// }
+            layout->addWidget(cell, row, col);
+        }
+    }
+
+    ui->boardWidget->setLayout(layout);
+}
+
+void MainWindow::updateStatus(long long iteration, bool solved)
+{
+    ui->labelIteration->setText(QString::number(iteration));
+
+    ui->labelState->setText(
+        solved ? "Solved" : "No solution");
+}
+
+void MainWindow::on_pushButtonSolve_clicked()
+{
+    if (!currentBoard.has_value())
+        return;
+
+    int interval = ui->spinBoxInterval->value();
+    bool effMode = ui->checkBoxEff->isChecked();
+
+    QThread* thread = new QThread;
+    Solver* solver = new Solver(*currentBoard, interval, effMode);
+
+
+    solver->moveToThread(thread);
+
+    connect(thread, &QThread::started,
+            solver, &Solver::solve);
+
+    connect(solver, &Solver::finished,
+            this, &MainWindow::onSolveFinished);
+
+    connect(solver, &Solver::progress,
+            this, [this](long long iter)
+            {
+                ui->labelIteration->setText(QString::number(iter));
+            });
+
+    connect(solver, &Solver::finished,
+            thread, &QThread::quit);
+
+    connect(thread, &QThread::finished,
+            solver, &QObject::deleteLater);
+
+    connect(thread, &QThread::finished,
+            thread, &QObject::deleteLater);
+
+    thread->start();
+}
+
+void MainWindow::on_pushButtonBrowse_clicked()
+{
+    QString defaultPath = QString(PROJECT_ROOT) + "/test";
+
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Select Test Case",
+        defaultPath,
+        "Text Files (*.txt);;All Files (*)");
+
+    if (!fileName.isEmpty())
+    {
+        ui->lineEditPath->setText(fileName);
+    }
+}
+
+void MainWindow::on_pushButtonImport_clicked()
+{
+    QString path = ui->lineEditPath->text();
+
+    if (path.isEmpty())
+    {
+        ui->labelState->setText("No file selected");
+        return;
+    }
+
+    std::ifstream file(path.toStdString());
+
+    if (!file.is_open())
+    {
+        ui->labelState->setText("Failed to open file");
+        return;
+    }
+
+    std::vector<std::vector<int>> color;
+    std::string line;
+
+    while (getline(file, line))
+    {
+        if (line.empty())
+            continue;
+
+        std::vector<int> row;
+
+        for (char c : line)
+        {
+            if (!isalpha(c))
+            {
+                ui->labelState->setText("Invalid character");
+                return;
+            }
+
+            row.push_back(c - 'A');
+        }
+
+        color.push_back(row);
+    }
+
+    int n = color.size();
+
+    if (n == 0)
+    {
+        ui->labelState->setText("Empty file");
+        return;
+    }
+
+    for (const auto &row : color)
+    {
+        if ((int)row.size() != n)
+        {
+            ui->labelState->setText("File is not NxN");
+            return;
+        }
+    }
+
+    currentBoard = Board(n, color);
+
+    renderBoard();
+}
+
+void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved)
+{
+    currentBoard = result;
+    if(solved) renderBoard();
+    updateStatus(iteration, solved);
+}

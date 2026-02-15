@@ -21,5 +21,6 @@ public:
     bool isValidPos(int row, int col) const; // tentatif
 
     const vector<vector<int>> &getGrid() const;
+    const vector<vector<int>> &getColor() const;
     int getSize() const;
 };

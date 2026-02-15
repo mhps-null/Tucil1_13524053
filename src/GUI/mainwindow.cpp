@@ -245,15 +245,16 @@ void MainWindow::on_pushButtonImport_clicked()
     {
         if ((int)row.size() != n)
         {
-            ui->labelState->setText("File is not NxN");
+            ui->labelState->setText("Grid is not NxN");
             return;
         }
     }
 
+    if (!validateBoard(color))
+        return;
+
     currentBoard = Board(n, color);
-
     renderBoard();
-
     ui->stackedWidget->setCurrentWidget(ui->boardWidget);
 }
 
@@ -324,9 +325,11 @@ void MainWindow::on_pushButtonBuildBoard_clicked()
         }
     }
 
+    if (!validateBoard(color))
+        return;
+
     currentBoard = Board(n, color);
     renderBoard();
-
     ui->stackedWidget->setCurrentWidget(ui->boardWidget);
     ui->labelState->setText("Board created from painted colors");
 }
@@ -349,6 +352,55 @@ void MainWindow::onSolveFinished(const Board &result, long long iteration, bool 
     updateStatus(iteration, solved, time);
 
     solverActive = false;
+}
+
+bool MainWindow::validateBoard(const std::vector<std::vector<int>> &color)
+{
+    int n = color.size();
+
+    if (n == 0)
+    {
+        ui->labelState->setText("Board size invalid");
+        return false;
+    }
+
+    for (const auto &row : color)
+    {
+        if ((int)row.size() != n)
+        {
+            ui->labelState->setText("Board must be NxN");
+            return false;
+        }
+    }
+
+    std::set<int> uniqueColors;
+
+    for (const auto &row : color)
+        for (int c : row)
+            uniqueColors.insert(c);
+
+    if ((int)uniqueColors.size() != n)
+    {
+        ui->labelState->setText("Number of colors must be exactly N");
+        return false;
+    }
+
+    std::vector<int> count(n, 0);
+
+    for (const auto &row : color)
+        for (int c : row)
+            count[c]++;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (count[i] == 0)
+        {
+            ui->labelState->setText("Each color must appear at least once");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)

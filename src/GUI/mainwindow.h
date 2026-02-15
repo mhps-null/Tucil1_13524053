@@ -44,6 +44,7 @@ private:
 
     void renderBoard();
     void updateStatus(long long iteration, bool solved, qint64 time);
+    bool validateBoard(const std::vector<std::vector<int>> &color);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

@@ -86,14 +86,21 @@
             <item row="1" column="0" colspan="3">
              <widget class="QPushButton" name="pushButtonImport">
               <property name="text">
-               <string>Import</string>
+               <string>Import as .txt</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="3">
+             <widget class="QPushButton" name="pushButtonSave">
+              <property name="text">
+               <string>Save</string>
               </property>
              </widget>
             </item>
             <item row="2" column="0" colspan="3">
-             <widget class="QPushButton" name="pushButtonSave">
+             <widget class="QPushButton" name="pushButtonImportImage">
               <property name="text">
-               <string>Save</string>
+               <string>Import as Image</string>
               </property>
              </widget>
             </item>

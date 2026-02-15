@@ -27,6 +27,7 @@ private slots:
     void on_pushButtonSolve_clicked();
     void on_pushButtonBrowse_clicked();
     void on_pushButtonImport_clicked();
+    void on_pushButtonImportImage_clicked();
     void on_pushButtonStop_clicked();
     void on_pushButtonGenerate_clicked();
     void on_pushButtonBuildBoard_clicked();

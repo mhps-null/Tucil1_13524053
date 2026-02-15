@@ -221,6 +221,30 @@ void MainWindow::on_pushButtonImport_clicked()
     ui->stackedWidget->setCurrentWidget(ui->boardWidget);
 }
 
+void MainWindow::on_pushButtonImportImage_clicked()
+{
+    QString path = QFileDialog::getOpenFileName(
+        this,
+        "Select Image",
+        "",
+        "Images (*.png *.jpg *.bmp)");
+
+    std::vector<std::vector<int>> color;
+    QString error;
+
+    if (!FileManager::loadImage(path, color, error))
+    {
+        ui->labelState->setText(error);
+        return;
+    }
+
+    if (!validateBoard(color))
+        return;
+
+    currentBoard = Board(color.size(), color);
+    renderBoard();
+}
+
 void MainWindow::on_pushButtonGenerate_clicked()
 {
     int n = ui->spinBoxN->value();

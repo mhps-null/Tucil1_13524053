@@ -6,6 +6,7 @@
 
 #include "core/Board.h"
 #include "core/Solver.h"
+#include "helper/FileManager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -30,6 +31,8 @@ private slots:
     void on_pushButtonGenerate_clicked();
     void on_pushButtonBuildBoard_clicked();
     void on_pushButtonChangeColor_clicked();
+    void on_pushButtonSave_clicked();
+
     void onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time);
 
 private:

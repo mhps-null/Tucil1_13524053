@@ -18,7 +18,6 @@ public:
     void placeQueen(int row, int col);
     void removeQueen(int row, int col);
     bool isValidWholeBoard() const;
-    bool isValidPos(int row, int col) const; // tentatif
 
     const vector<vector<int>> &getGrid() const;
     const vector<vector<int>> &getColor() const;

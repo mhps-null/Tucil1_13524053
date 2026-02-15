@@ -20,7 +20,7 @@ qt_add_executable(Tucil1_13524053
     src/GUI/mainwindow.h src/GUI/mainwindow.cpp src/GUI/mainwindow.ui
 
     # HELPER
-    src/helper/FileParser.cpp
+    src/helper/FileManager.cpp
 )
 
 target_compile_definitions(Tucil1_13524053 PRIVATE

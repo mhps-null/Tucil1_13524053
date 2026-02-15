@@ -11,9 +11,7 @@
 #include <QThread>
 #include <QMouseEvent>
 
-#include <fstream>
 #include <vector>
-#include <string>
 #include <cctype>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->tableWidgetColor->setMouseTracking(true);
     ui->tableWidgetColor->viewport()->installEventFilter(this);
+
+    QString defaultPath = QString(PROJECT_ROOT) + "/test";
+    ui->lineEditPath->setText(defaultPath);
 }
 
 MainWindow::~MainWindow()
@@ -201,57 +202,19 @@ void MainWindow::on_pushButtonImport_clicked()
         return;
     }
 
-    std::ifstream file(path.toStdString());
-
-    if (!file.is_open())
-    {
-        ui->labelState->setText("Failed to open file");
-        return;
-    }
-
     std::vector<std::vector<int>> color;
-    std::string line;
+    QString error;
 
-    while (getline(file, line))
+    if (!FileManager::load(path, color, error))
     {
-        if (line.empty())
-            continue;
-
-        std::vector<int> row;
-
-        for (char c : line)
-        {
-            if (!isalpha(c))
-            {
-                ui->labelState->setText("Invalid character");
-                return;
-            }
-
-            row.push_back(c - 'A');
-        }
-
-        color.push_back(row);
-    }
-
-    int n = color.size();
-
-    if (n == 0)
-    {
-        ui->labelState->setText("Empty file");
+        ui->labelState->setText(error);
         return;
-    }
-
-    for (const auto &row : color)
-    {
-        if ((int)row.size() != n)
-        {
-            ui->labelState->setText("Grid is not NxN");
-            return;
-        }
     }
 
     if (!validateBoard(color))
         return;
+
+    int n = color.size();
 
     currentBoard = Board(n, color);
     renderBoard();
@@ -338,6 +301,32 @@ void MainWindow::on_pushButtonChangeColor_clicked()
 {
     int hue = QRandomGenerator::global()->bounded(360);
     currentPaintColor = QColor::fromHsv(hue, 160, 220);
+}
+
+void MainWindow::on_pushButtonSave_clicked()
+{
+    if (!currentBoard.has_value())
+    {
+        ui->labelState->setText("No board to save");
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        "Save Board",
+        "",
+        "Text Files (*.txt)");
+
+    if (fileName.isEmpty())
+        return;
+
+    if (!FileManager::save(*currentBoard, fileName))
+    {
+        ui->labelState->setText("Failed to save file");
+        return;
+    }
+
+    ui->labelState->setText("Board saved successfully");
 }
 
 void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time)

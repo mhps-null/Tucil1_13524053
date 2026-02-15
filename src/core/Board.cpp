@@ -128,67 +128,6 @@ bool Board::isValidWholeBoard() const
     return true;
 }
 
-bool Board::isValidPos(int row, int col) const // tentatif
-{
-    // size
-    if (row > n - 1 || row < 0 || col > n - 1 || col < 0)
-    {
-        return false;
-    }
-
-    // row
-    for (int i = 0; i < n; i++)
-    {
-        if (grid[row][i] == 1)
-        {
-            return false;
-        }
-    }
-
-    // column
-    for (int i = 0; i < n; i++)
-    {
-        if (grid[i][col] == 1)
-        {
-            return false;
-        }
-    }
-
-    // adjacent diagonally
-    if (row < n - 1 && col < n - 1 && grid[row + 1][col + 1] == 1)
-    {
-        return false;
-    }
-    if (row < n - 1 && col > 0 && grid[row + 1][col - 1] == 1)
-    {
-        return false;
-    }
-    if (row > 0 && col > 0 && grid[row - 1][col - 1] == 1)
-    {
-        return false;
-    }
-    if (row > 0 && col < n - 1 && grid[row - 1][col + 1] == 1)
-    {
-        return false;
-    }
-
-    // color
-    int cId = color[row][col];
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            if (color[i][j] == cId && grid[i][j] == 1)
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 int Board::countColorId() const
 {
     set<int> colorId;

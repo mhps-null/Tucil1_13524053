@@ -26,7 +26,7 @@ private slots:
     void on_pushButtonBrowse_clicked();
     void on_pushButtonImport_clicked();
     void on_pushButtonReset_clicked();
-    void onSolveFinished(const Board &result, long long iteration, bool solved);
+    void onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time);
 
 private:
     Ui::MainWindow *ui;
@@ -37,5 +37,5 @@ private:
     Solver *solverWorker = nullptr;
 
     void renderBoard();
-    void updateStatus(long long iteration, bool solved);
+    void updateStatus(long long iteration, bool solved, qint64 time);
 };

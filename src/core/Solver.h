@@ -14,7 +14,7 @@ private:
     int historyInterval = 100;
 
     std::atomic<bool> stopRequested{false};
-    
+
     bool solutionFound = false;
     bool efficientMode = false;
 
@@ -33,6 +33,6 @@ public slots:
     void solve();
 
 signals:
-    void finished(const Board result, long long iterationCount, bool solutionFound);
+    void finished(const Board result, long long iterationCount, bool solutionFound, qint64 time);
     void progress(long long iteration);
 };

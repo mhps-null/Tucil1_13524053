@@ -90,12 +90,14 @@ void MainWindow::renderBoard()
     ui->boardWidget->setLayout(layout);
 }
 
-void MainWindow::updateStatus(long long iteration, bool solved)
+void MainWindow::updateStatus(long long iteration, bool solved, qint64 time)
 {
     ui->labelIteration->setText(QString::number(iteration));
 
     ui->labelState->setText(
         solved ? "Solved" : "No solution");
+
+    ui->labelTime->setText(QString::number(time) + " ms");
 }
 
 void MainWindow::on_pushButtonSolve_clicked()
@@ -172,6 +174,7 @@ void MainWindow::on_pushButtonReset_clicked()
 
     ui->labelIteration->setText("0");
     ui->labelState->setText("Idle");
+    ui->labelTime->setText("-");
     ui->lineEditPath->clear();
 }
 
@@ -255,7 +258,7 @@ void MainWindow::on_pushButtonImport_clicked()
     renderBoard();
 }
 
-void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved)
+void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time)
 {
     if (!solverActive)
         return;
@@ -265,7 +268,7 @@ void MainWindow::onSolveFinished(const Board &result, long long iteration, bool 
     if (solved)
         renderBoard();
 
-    updateStatus(iteration, solved);
+    updateStatus(iteration, solved, time);
 
     solverActive = false;
 }

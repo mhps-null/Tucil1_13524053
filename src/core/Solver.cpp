@@ -1,10 +1,14 @@
 #include "Solver.h"
+#include <QElapsedTimer>
 
 Solver::Solver(const Board &board, int historyInterval, bool efficientMode)
     : board(board), historyInterval(historyInterval > 0 ? historyInterval : 1), efficientMode(efficientMode) {}
 
 void Solver::solve()
 {
+    QElapsedTimer timer;
+    timer.start();
+
     int n = board.getSize();
 
     if (!efficientMode)
@@ -82,7 +86,8 @@ void Solver::solve()
             }
         } while (next_permutation(permutation.begin(), permutation.end()));
     }
-    emit finished(board, iterationCount, solutionFound);
+    qint64 time = timer.elapsed();
+    emit finished(board, iterationCount, solutionFound, time);
 }
 
 void Solver::recordIteration()

@@ -83,11 +83,9 @@ Program dapat dikompilasi secara native pada masing-masing sistem operasi menggu
 
 ## Cara Menggunakan Program
 
-1. Memasukkan papan
+1. Memasukkan papan: Masukkan papan warna secara manual melalui antarmuka (UI) **atau** Impor papan dari file .txt atau gambar (.png .jpg .bmp).
 
-Masukkan papan warna secara manual melalui antarmuka (UI) **atau** Impor papan dari file .txt atau gambar (.png .jpg .bmp).
-
-2. Menjalankan solver
+2. Menjalankan solver:
 
 - Tekan tombol Solve untuk memulai proses pencarian solusi.
 - Program akan menampilkan proses brute force secara real-time.
@@ -95,9 +93,7 @@ Masukkan papan warna secara manual melalui antarmuka (UI) **atau** Impor papan d
 - Jika solusi ditemukan, posisi ratu akan ditampilkan pada papan.
 - Jika tidak ada solusi valid, program akan menampilkan informasi (State) bahwa solusi tidak ditemukan.
 
-3. Menyimpan hasil
-
-Hasil solusi dapat diekspor dalam format gambar (.png) **atau** format teks (.txt).
+3. Menyimpan hasil: Hasil solusi dapat diekspor dalam format gambar (.png) **atau** format teks (.txt).
 
 ## Author
 

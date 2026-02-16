@@ -27,7 +27,7 @@ Program Queens Linkedin Solver ini adalah program yang dapat menemukan satu solu
 
 ## Catatan Penting
 
-Repository ini menyertakan file executable dalam bentuk .zip untuk mempermudah proses menjalankan program tanpa perlu melakukan kompilasi ulang. Trade-off dari pendekatan ini adalah ukuran repository menjadi besar (>50 MB) karena menyertakan file binary beserta dependensinya.
+Repository ini menyertakan file executable dalam bentuk .zip (size 25 MB) untuk mempermudah proses menjalankan program tanpa perlu melakukan kompilasi ulang.
 
 ## Requirement
 

@@ -6,6 +6,8 @@
   <img src="preview.png" width="60%"/>
 </p>
 
+## Penjelasan Program
+
 Queens (game pada platform LinkedIn) adalah permainan logika di mana pemain harus menempatkan N buah ratu pada papan berwarna dengan aturan:
 
 - Setiap baris hanya boleh berisi tepat satu ratu.
@@ -17,7 +19,7 @@ Jumlah ratu yang ditempatkan sama dengan jumlah baris, kolom, dan wilayah warna 
 
 Program Queens Linkedin Solver ini adalah program yang dapat menemukan satu solusi penempatan queen pada suatu papan berwarna yang diberikan, atau menampilkan bahwa tidak ada solusi yang valid. Program melakukan pencarian solusi menggunakan algoritma brute force. Program ini merupakan aplikasi desktop untuk menyelesaikan permainan Queens. Aplikasi mendukung input dan output dalam format gambar maupun berkas teks (.txt).
 
-## Fitur
+### Fitur
 
 - Antarmuka pengguna interaktif dengan pembaruan proses brute force secara langsung (live update).
 - Input papan warna secara manual melalui UI.

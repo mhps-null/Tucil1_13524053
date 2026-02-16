@@ -1,3 +1,4 @@
 build/*
 *.user
 .qtcreator/
+/bin/windows/Tucil1_13524053/

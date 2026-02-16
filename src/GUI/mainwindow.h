@@ -34,6 +34,7 @@ private slots:
     void on_pushButtonBuildBoard_clicked();
     void on_pushButtonChangeColor_clicked();
     void on_pushButtonSave_clicked();
+    void on_pushButtonBuildBoardInput_clicked();
 
     void onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time);
 

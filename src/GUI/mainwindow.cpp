@@ -349,6 +349,130 @@ void MainWindow::on_pushButtonSave_clicked()
     ui->labelState->setText("Board saved successfully");
 }
 
+QColor averageColor(const QImage &img, int cx, int cy)
+{
+    int r = 0, g = 0, b = 0, count = 0;
+
+    for (int y = cy - 1; y <= cy + 1; y++)
+        for (int x = cx - 1; x <= cx + 1; x++)
+            if (x >= 0 && y >= 0 && x < img.width() && y < img.height())
+            {
+                QColor c = img.pixelColor(x, y);
+                r += c.red();
+                g += c.green();
+                b += c.blue();
+                count++;
+            }
+
+    if (count == 0)
+        return QColor(0, 0, 0);
+
+    return QColor(r / count, g / count, b / count);
+}
+
+void MainWindow::on_pushButtonBuildBoardInput_clicked()
+{
+    if (ui->stackedWidget->currentWidget() != ui->imagePage)
+        return;
+
+    int n = ui->spinBoxN->value();
+    if (n <= 0)
+    {
+        ui->labelState->setText("Set N terlebih dahulu");
+        return;
+    }
+
+    QRect area = ui->imageWidget->getSelectedRect();
+    if (area.isNull())
+    {
+        ui->labelState->setText("Select area first");
+        return;
+    }
+
+    const QImage &img = ui->imageWidget->getImage();
+    if (img.isNull())
+    {
+        ui->labelState->setText("Image not loaded");
+        return;
+    }
+
+    if (area.width() < n || area.height() < n)
+    {
+        ui->labelState->setText("Selection too small for this N");
+        return;
+    }
+
+    double scaleX = (double)img.width() / ui->imageWidget->width();
+    double scaleY = (double)img.height() / ui->imageWidget->height();
+
+    int cellW = area.width() / n;
+    int cellH = area.height() / n;
+
+    std::vector<std::vector<int>> color(n, std::vector<int>(n));
+
+    QMap<QString, int> colorMap;
+    int nextId = 0;
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            QMap<QString, int> freq;
+
+            for (int y = 0; y < cellH; ++y)
+            {
+                for (int x = 0; x < cellW; ++x)
+                {
+                    int px = (area.x() + j * cellW + x) * scaleX;
+                    int py = (area.y() + i * cellH + y) * scaleY;
+
+                    if (px >= 0 && py >= 0 &&
+                        px < img.width() && py < img.height())
+                    {
+                        QColor c = img.pixelColor(px, py);
+
+                        int r = c.red() / 16;
+                        int g = c.green() / 16;
+                        int b = c.blue() / 16;
+
+                        QString key =
+                            QString("%1_%2_%3").arg(r).arg(g).arg(b);
+
+                        freq[key]++;
+                    }
+                }
+            }
+
+            QString bestKey;
+            int maxCount = 0;
+
+            for (auto it = freq.begin(); it != freq.end(); ++it)
+            {
+                if (it.value() > maxCount)
+                {
+                    maxCount = it.value();
+                    bestKey = it.key();
+                }
+            }
+
+            if (!colorMap.contains(bestKey))
+                colorMap[bestKey] = nextId++;
+
+            color[i][j] = colorMap[bestKey];
+        }
+    }
+
+    if (!validateBoard(color))
+        return;
+
+    currentBoard = Board(n, color);
+
+    renderBoard();
+
+    ui->stackedWidget->setCurrentWidget(ui->boardWidget);
+    ui->labelState->setText("Board built from image selection");
+}
+
 void MainWindow::onSolveFinished(const Board &result, long long iteration, bool solved, qint64 time)
 {
     if (!solverActive)

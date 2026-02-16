@@ -255,6 +255,8 @@ void MainWindow::importTxt()
 
 void MainWindow::importImage()
 {
+    ui->spinBoxN->setValue(0);
+
     QString defaultPath = QString(PROJECT_ROOT) + "/test";
     QString path = ui->lineEditPath->text();
 
@@ -397,6 +399,12 @@ void MainWindow::saveTxt()
     if (fileName.isEmpty())
         return;
 
+    QFileInfo info(fileName);
+    if (info.suffix().isEmpty())
+    {
+        fileName += ".txt";
+    }
+
     if (!FileManager::save(*currentBoard, fileName))
     {
         ui->labelState->setText("Failed to save file");
@@ -422,6 +430,12 @@ void MainWindow::saveImage()
 
     if (fileName.isEmpty())
         return;
+
+    QFileInfo info(fileName);
+    if (info.suffix().isEmpty())
+    {
+        fileName += ".png";
+    }
 
     const Board &board = *currentBoard;
 
@@ -507,7 +521,7 @@ void MainWindow::on_pushButtonBuildBoardInput_clicked()
     int n = ui->spinBoxN->value();
     if (n <= 0)
     {
-        ui->labelState->setText("Set N terlebih dahulu");
+        ui->labelState->setText("Set N first");
         return;
     }
 

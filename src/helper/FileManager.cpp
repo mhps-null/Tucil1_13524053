@@ -53,24 +53,25 @@ bool FileManager::load(const QString &path, std::vector<std::vector<int>> &color
     color.clear();
     std::string line;
 
-    while (getline(file, line))
+    while (std::getline(file, line))
     {
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
         if (line.empty())
-        {
             break;
-        }
 
         std::vector<int> row;
 
         for (char c : line)
         {
-            if (!isalpha(c))
+            if (!std::isalpha(static_cast<unsigned char>(c)))
             {
                 error = "Invalid character";
                 return false;
             }
 
-            row.push_back(toupper(c) - 'A');
+            row.push_back(std::toupper(static_cast<unsigned char>(c)) - 'A');
         }
 
         color.push_back(row);

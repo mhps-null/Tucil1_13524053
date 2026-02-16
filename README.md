@@ -70,7 +70,7 @@ Program dapat dikompilasi secara native pada masing-masing sistem operasi menggu
 
 ### Windows (Qt 6.10.2 MinGW 64-bit)
 
-1. Pastikan environment variable berikut sudah diset: `CMAKE_PREFIX_PATH=C:\Qt\6.10.2\mingw_64`
+1. Pastikan environment variable berikut sudah diset: `set CMAKE_PREFIX_PATH=C:\Qt\6.10.2\mingw_64`
 2. Kemudian dari root project jalankan: `cmake -S . -B build -G Ninja` `cmake --build build`
 3. Executable akan dihasilkan di folder: `build/`
 4. Untuk menjalankan di Windows tanpa instalasi Qt, lakukan deployment: `cd build` `C:\Qt\6.10.2\mingw_64\bin\windeployqt.exe Tucil1_13524053.exe`

@@ -28,7 +28,6 @@ private slots:
     void on_pushButtonSolve_clicked();
     void on_pushButtonBrowse_clicked();
     void on_pushButtonImport_clicked();
-    void on_pushButtonImportImage_clicked();
     void on_pushButtonStop_clicked();
     void on_pushButtonGenerate_clicked();
     void on_pushButtonBuildBoard_clicked();
@@ -51,6 +50,11 @@ private:
     void renderBoard();
     void updateStatus(long long iteration, bool solved, qint64 time);
     bool validateBoard(const std::vector<std::vector<int>> &color);
+
+    void saveTxt();
+    void saveImage();
+    void importTxt();
+    void importImage();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

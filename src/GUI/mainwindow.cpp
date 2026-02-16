@@ -10,6 +10,8 @@
 #include <QColor>
 #include <QThread>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QFileInfo>
 
 #include <vector>
 #include <cctype>
@@ -180,21 +182,51 @@ void MainWindow::on_pushButtonBrowse_clicked()
 {
     QString defaultPath = QString(PROJECT_ROOT) + "/test";
 
+    int mode = ui->comboBoxMode->currentIndex();
+
+    QString filter;
+
+    if (mode == 0)
+        filter = "Text Files (*.txt)";
+    else
+        filter = "Images (*.png *.jpg *.bmp)";
+
     QString fileName = QFileDialog::getOpenFileName(
         this,
-        "Select Test Case",
+        "Select File",
         defaultPath,
-        "Text Files (*.txt);;All Files (*)");
+        filter);
 
     if (!fileName.isEmpty())
-    {
         ui->lineEditPath->setText(fileName);
-    }
 }
 
 void MainWindow::on_pushButtonImport_clicked()
 {
+    int mode = ui->comboBoxMode->currentIndex();
+
+    if (mode == 0)
+    {
+        importTxt();
+    }
+    else if (mode == 1)
+    {
+        importImage();
+    }
+}
+
+void MainWindow::importTxt()
+{
+    QString defaultPath = QString(PROJECT_ROOT) + "/test";
     QString path = ui->lineEditPath->text();
+
+    QFileInfo info(path);
+
+    if (path == defaultPath || info.isDir())
+    {
+        ui->labelState->setText("Choose file");
+        return;
+    }
 
     if (path.isEmpty())
     {
@@ -221,13 +253,24 @@ void MainWindow::on_pushButtonImport_clicked()
     ui->stackedWidget->setCurrentWidget(ui->boardWidget);
 }
 
-void MainWindow::on_pushButtonImportImage_clicked()
+void MainWindow::importImage()
 {
-    QString path = QFileDialog::getOpenFileName(
-        this,
-        "Open Image",
-        "",
-        "Images (*.png *.jpg *.bmp)");
+    QString defaultPath = QString(PROJECT_ROOT) + "/test";
+    QString path = ui->lineEditPath->text();
+
+    QFileInfo info(path);
+
+    if (path == defaultPath || info.isDir())
+    {
+        ui->labelState->setText("Choose file");
+        return;
+    }
+
+    if (path.isEmpty())
+    {
+        ui->labelState->setText("No file selected");
+        return;
+    }
 
     if (path.isEmpty())
         return;
@@ -325,6 +368,20 @@ void MainWindow::on_pushButtonChangeColor_clicked()
 
 void MainWindow::on_pushButtonSave_clicked()
 {
+    int mode = ui->comboBoxMode->currentIndex();
+
+    if (mode == 0)
+    {
+        saveTxt();
+    }
+    else if (mode == 1)
+    {
+        saveImage();
+    }
+}
+
+void MainWindow::saveTxt()
+{
     if (!currentBoard.has_value())
     {
         ui->labelState->setText("No board to save");
@@ -333,7 +390,7 @@ void MainWindow::on_pushButtonSave_clicked()
 
     QString fileName = QFileDialog::getSaveFileName(
         this,
-        "Save Board",
+        "Save Board as .txt",
         "",
         "Text Files (*.txt)");
 
@@ -347,6 +404,78 @@ void MainWindow::on_pushButtonSave_clicked()
     }
 
     ui->labelState->setText("Board saved successfully");
+}
+
+void MainWindow::saveImage()
+{
+    if (!currentBoard.has_value())
+    {
+        ui->labelState->setText("No board to save");
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        "Save Board as Image",
+        "",
+        "PNG Files (*.png);;JPG Files (*.jpg)");
+
+    if (fileName.isEmpty())
+        return;
+
+    const Board &board = *currentBoard;
+
+    int n = board.getSize();
+    const auto &grid = board.getGrid();
+    const auto &color = board.getColor();
+
+    int cellSize = 80;
+    int imgSize = n * cellSize;
+
+    QImage image(imgSize, imgSize, QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QFont font = painter.font();
+    font.setPointSize(cellSize / 2);
+    font.setBold(true);
+    painter.setFont(font);
+
+    for (int row = 0; row < n; ++row)
+    {
+        for (int col = 0; col < n; ++col)
+        {
+            int x = col * cellSize;
+            int y = row * cellSize;
+
+            QColor cellColor = QColor::fromHsv((color[row][col] * 40) % 360, 160, 220);
+
+            painter.fillRect(x, y, cellSize, cellSize, cellColor);
+
+            painter.setPen(Qt::black);
+            painter.drawRect(x, y, cellSize, cellSize);
+
+            if (grid[row][col] == 1)
+            {
+                painter.drawText(
+                    QRect(x, y, cellSize, cellSize),
+                    Qt::AlignCenter,
+                    "♛");
+            }
+        }
+    }
+
+    painter.end();
+
+    if (!image.save(fileName))
+    {
+        ui->labelState->setText("Failed to save image");
+        return;
+    }
+
+    ui->labelState->setText("Image saved successfully");
 }
 
 QColor averageColor(const QImage &img, int cx, int cy)

@@ -50,7 +50,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="3" column="0" colspan="2">
              <widget class="QPushButton" name="pushButtonGenerate">
               <property name="text">
                <string>Generate Grid</string>
@@ -66,27 +66,10 @@
             <string>File</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,0,0">
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEditPath"/>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Path</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="2">
              <widget class="QPushButton" name="pushButtonBrowse">
               <property name="text">
                <string>Browse</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" colspan="3">
-             <widget class="QPushButton" name="pushButtonImport">
-              <property name="text">
-               <string>Import as .txt</string>
               </property>
              </widget>
             </item>
@@ -98,9 +81,40 @@
              </widget>
             </item>
             <item row="2" column="0" colspan="3">
-             <widget class="QPushButton" name="pushButtonImportImage">
+             <widget class="QPushButton" name="pushButtonImport">
               <property name="text">
-               <string>Import as Image</string>
+               <string>Import</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Path</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEditPath"/>
+            </item>
+            <item row="1" column="1" colspan="2">
+             <widget class="QComboBox" name="comboBoxMode">
+              <item>
+               <property name="text">
+                <string>Text (.txt)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Image (.png .jpg .bmp)</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Mode</string>
               </property>
              </widget>
             </item>

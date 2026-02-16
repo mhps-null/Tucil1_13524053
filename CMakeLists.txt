@@ -21,6 +21,7 @@ qt_add_executable(Tucil1_13524053
 
     # HELPER
     src/helper/FileManager.cpp
+    src/helper/ImageWidget.cpp
 )
 
 target_compile_definitions(Tucil1_13524053 PRIVATE

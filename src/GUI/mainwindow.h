@@ -7,6 +7,7 @@
 #include "core/Board.h"
 #include "core/Solver.h"
 #include "helper/FileManager.h"
+#include "helper/ImageWidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui

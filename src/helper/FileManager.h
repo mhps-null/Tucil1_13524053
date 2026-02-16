@@ -2,7 +2,9 @@
 #include <QString>
 #include <QImage>
 #include <QMap>
+
 #include "core/Board.h"
+#include "helper/ImageWidget.h"
 
 class FileManager
 {

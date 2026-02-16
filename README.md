@@ -2,7 +2,9 @@
 
 > Tugas Kecil 1 IF2211 Strategi Algoritma.
 
-![queens linkedin game](preview.png)
+<p align="center">
+  <img src="preview.png" width="60%"/>
+</p>
 
 Queens (game pada platform LinkedIn) adalah permainan logika di mana pemain harus menempatkan N buah ratu pada papan berwarna dengan aturan:
 

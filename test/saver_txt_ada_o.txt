@@ -1,0 +1,9 @@
+AABB
+AABB
+CCDD
+CCDD
+
+..Q.
+Q...
+...Q
+.Q..

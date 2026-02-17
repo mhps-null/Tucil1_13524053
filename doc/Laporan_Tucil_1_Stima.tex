@@ -1,0 +1,1124 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=blue]{hyperref}
+\usepackage{longtable}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+
+\renewcommand{\contentsname}{Daftar Isi}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{codeblue}{rgb}{0.0, 0.2, 0.6}
+
+\lstdefinestyle{cppstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    language=C++,
+    morekeywords={Q_OBJECT, slots, signals, qint64, QElapsedTimer, explicit, override} 
+}
+
+\lstset{style=cppstyle}
+
+\geometry{margin=3cm}
+
+\begin{document}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\begin{titlepage}
+    \centering
+    
+    \vspace*{2cm}
+    
+    {\Large \textbf{Laporan Tugas Kecil 1 IF2211 Strategi Algoritma}}\\[0.3cm]
+    
+    {\Large \textbf{Queens LinkedIn Solver}}\\[2cm]
+    
+    \vfill
+    
+    {\large
+    Muhammad Haris Putra Sulastianto\\
+    13524053\\[0.3cm]
+    }
+
+    {
+    \href{mailto:13524053@std.stei.itb.ac.id}{13524053@std.stei.itb.ac.id} \\
+    \href{mailto:mharisputras.work@gmail.com}{mharisputras.work@gmail.com}
+    }
+    \vfill
+    
+    {\large
+    Program Studi Teknik Informatika\\
+    Sekolah Teknik Elektro dan Informatika\\
+    Institut Teknologi Bandung\\[0.5cm]
+    2026
+    }
+    
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Permasalahan}
+
+Permainan Queens pada platform LinkedIn merupakan permainan logika berbasis papan berwarna. Diberikan sebuah papan berukuran $N \times N$ yang terbagi ke dalam $N$ wilayah warna (region), tujuan permainan adalah menempatkan tepat $N$ buah ratu sehingga seluruh aturan berikut terpenuhi:
+
+\begin{itemize}
+    \item Setiap baris hanya boleh berisi tepat satu ratu.
+    \item Setiap kolom hanya boleh berisi tepat satu ratu.
+    \item Setiap wilayah warna (region) hanya boleh berisi tepat satu ratu.
+    \item Tidak ada dua ratu yang boleh saling bertetangga (1 petak), termasuk secara diagonal.
+\end{itemize}
+
+Jumlah ratu yang ditempatkan sama dengan jumlah baris, kolom, dan wilayah warna ($N$).
+
+\section{Pendekatan Solusi}
+
+Pendekatan paling sederhana untuk menyelesaikan permainan Queens adalah menggunakan metode brute force, yaitu mencoba semua kemungkinan penempatan ratu hingga ditemukan konfigurasi yang memenuhi seluruh aturan atau tidak ditemukan solusi sama sekali. Pendekatan ini dapat direpresentasikan sebagai proses pencarian dalam ruang solusi dengan mengeksplorasi setiap kemungkinan peletakan ratu pada papan berwarna.
+
+\section{Implementasi}
+
+Program Queens LinkedIn Solver bertugas memproses masukan berupa papan permainan berwarna untuk menentukan konfigurasi penempatan ratu yang valid. Jika solusi ditemukan, program akan menampilkannya, sebaliknya, program akan menyatakan bahwa tidak terdapat solusi yang memenuhi aturan.
+
+Pencarian solusi dilakukan menggunakan pendekatan algoritma brute force. Namun, untuk mempercepat proses, sistem menyediakan fitur 'mode efisien' yang mampu mengeliminasi ruang pencarian, sehingga mekanisme pencarian tidak bergantung sepenuhnya pada brute force murni. Implementasi perangkat lunak dilakukan dalam bentuk aplikasi desktop menggunakan bahasa C++ dan framework Qt, dengan dukungan masukan dan keluaran berformat berkas teks (.txt) serta gambar (.jpg .png).
+
+\subsection{Struktur Data dan Arsitektur}
+
+Struktur program dibangun di atas dua kelas utama, yaitu Board sebagai model data dan Solver sebagai pengelola logika pencarian.
+
+\subsubsection{Kelas Board}
+Kelas ini bertugas menyimpan representasi memori dari papan permainan dan aturan validasinya. Implementasi struktur data ini dapat dilihat pada Kode \ref{lst:board_h}.
+\\
+
+\begin{lstlisting}[caption={Header file Board.h}, label={lst:board_h}]
+#pragma once
+#include <vector>
+#include <set>
+using namespace std;
+
+class Board
+{
+private:
+    int n;
+    vector<vector<int>> grid;
+    vector<vector<int>> color;
+
+public:
+    Board(int n, const vector<vector<int>> &color);
+
+    int countColorId() const;
+
+    void placeQueen(int row, int col);
+    void removeQueen(int row, int col);
+    bool isValidWholeBoard() const;
+
+    const vector<vector<int>> &getGrid() const;
+    const vector<vector<int>> &getColor() const;
+    int getSize() const;
+};
+\end{lstlisting}
+
+\textbf{Atribut}
+
+Data papan permainan disimpan dalam dua variabel utama. Variabel \texttt{grid} digunakan untuk mencatat kotak mana yang sedang terisi ratu dan mana yang kosong. Variabel \texttt{color} menyimpan informasi warna untuk setiap kotak tersebut. Selain itu, ukuran lebar dan tinggi papan disimpan dalam variabel \texttt{n}.
+
+\textbf{Metode}
+
+Untuk mengubah isi papan, program menggunakan fungsi \texttt{placeQueen} (untuk menaruh ratu) dan \texttt{removeQueen} (untuk menghapus ratu). Pengecekan apakah posisi ratu sudah aman dan sesuai aturan dilakukan oleh fungsi \texttt{isValidWholeBoard}. Terakhir, fungsi \texttt{countColorId} digunakan hanya untuk menghitung ada berapa banyak warna di papan tersebut.
+
+\subsubsection{Kelas Solver}
+Kelas ini mewarisi \texttt{QObject} (dari framework Qt), yang berfungsi sebagai mesin pencari solusi dan penghubung ke antarmuka pengguna. Implementasi struktur data ini dapat dilihat pada Kode \ref{lst:solver_h}.
+\\
+
+\begin{lstlisting}[caption={Header file Solver.h}, label={lst:solver_h}]
+#pragma once
+#include <algorithm>
+#include <QElapsedTimer>
+#include <QObject>
+#include "Board.h"
+
+class Solver : public QObject
+{
+    Q_OBJECT
+private:
+    Board board;
+    QElapsedTimer frameTimer;
+
+    long long iterationCount = 0;
+
+    std::atomic<bool> stopRequested{false};
+
+    bool solutionFound = false;
+    bool efficientMode = false;
+
+public:
+    explicit Solver(const Board &board, bool efficientMode);
+
+    const Board &getBoard() const;
+    long long getIterationCount() const;
+    bool getSolFound() const;
+    void recordIteration();
+
+    void requestStop() { stopRequested = true; }
+
+public slots:
+    void solve();
+
+signals:
+    void boardUpdated(const Board &snapshot, long long iteration);
+    void finished(const Board result, long long iterationCount, bool solutionFound, qint64 time);
+    void progress(long long iteration);
+};
+\end{lstlisting}
+
+\textbf{Manajemen Status dan Waktu}
+
+Manajemen status internal difokuskan pada pengelolaan objek \texttt{board} sebagai data utama, serta penggunaan variabel kontrol \texttt{efficientMode} dan \texttt{stopRequested} untuk keamanan. Sementara itu, pengukuran kinerja algoritma dilakukan menggunakan \texttt{frameTimer} dengan penghitung langkah \texttt{iterationCount}.
+
+\textbf{Mekanisme Sinyal dan Slot (Qt)}
+
+Interaksi dengan antarmuka pengguna ditangani melalui mekanisme sinyal dan slot Qt. Fungsi slot \texttt{solve()} bertugas menjalankan logika utama, sedangkan komunikasi asinkron melalui sinyal \texttt{boardUpdated} dan \texttt{finished} memastikan pembaruan visual berjalan lancar tanpa membekukan aplikasi utama.
+
+\subsection{Algoritma}
+
+\subsubsection{Algoritma Validator Board}
+Implementasi algoritma ini dapat dilihat pada Kode \ref{lst:validator}.
+
+\begin{lstlisting}[caption={Validator papan}, label={lst:validator}]
+bool Board::isValidWholeBoard() const
+{
+    // queen
+    int qCount = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                qCount++;
+            }
+        }
+    }
+
+    if (qCount != n)
+    {
+        return false;
+    }
+
+    // row
+    for (int i = 0; i < n; i++)
+    {
+        int count = 0;
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                count++;
+                if (count > 1)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (count != 1)
+        {
+            return false;
+        }
+    }
+
+    // column
+    for (int j = 0; j < n; j++)
+    {
+        int count = 0;
+        for (int i = 0; i < n; i++)
+        {
+            if (grid[i][j] == 1)
+            {
+                count++;
+                if (count > 1)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (count != 1)
+        {
+            return false;
+        }
+    }
+
+    // adjacent diagonally
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                if (i < n - 1 && j < n - 1 && grid[i + 1][j + 1] == 1)
+                {
+                    return false;
+                }
+                if (i < n - 1 && j > 0 && grid[i + 1][j - 1] == 1)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // color
+    int maxColorId = countColorId();
+    vector<int> countColor(maxColorId, 0);
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                int c = color[i][j];
+                countColor[c]++;
+
+                if (countColor[c] != 1)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    for (int c = 0; c < maxColorId; c++)
+    {
+        if (countColor[c] != 1)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+\end{lstlisting}
+
+\textbf{Kompleksitas Algoritma : $$O(N^2)$$}
+
+Kompleksitas fungsi validasi adalah $O(N^2)$ karena seluruh papan dipindai beberapa kali. Walaupun ada beberapa loop terpisah (untuk baris, kolom, dan warna), semuanya tetap berbasis ukuran papan $N \times N$.
+
+\textbf{Langkah - Langkah}
+
+Langkah pertama adalah menghitung total ratu yang ada di atas papan. Program akan memeriksa seluruh kotak untuk memastikan jumlah ratu sama persis dengan ukuran papan ($N$). Jika jumlah ratu kurang atau lebih dari yang seharusnya, maka susunan papan langsung dianggap salah. Ini adalah cara cepat untuk membuang kemungkinan jawaban yang sudah pasti keliru sebelum mengecek aturan lainnya.
+
+Selanjutnya, program memeriksa posisi ratu di setiap baris dan kolom. Program memastikan bahwa setiap baris dan setiap kolom hanya berisi tepat satu ratu. Jika ditemukan ada baris atau kolom yang kosong, maka susunan papan dianggap tidak sah. Aturan ini memastikan ratu tersebar merata secara horizontal maupun vertikal.
+
+Setelah itu, program mengecek apakah ada ratu yang saling bersentuhan. Program akan melihat sekeliling posisi setiap ratu untuk memastikan tidak ada ratu lain di dekatnya. Jika ada dua ratu yang posisinya saling berdempetan bahkan secara diagonal, maka aturan dilanggar.
+
+Terakhir, program memeriksa aturan wilayah warna. Setiap warna atau area di papan harus memiliki tepat satu ratu. Program akan mendata warna apa saja yang sudah terisi oleh ratu. Jika ada warna yang terlewat (kosong) maka papan dinyatakan salah. Jika semua syarat dari awal sampai akhir ini terpenuhi, barulah solusi dianggap benar.
+
+\subsubsection{Algoritma Brute Force Murni}
+Pendekatan ini menganggap papan permainan sebagai sekumpulan sel biner (kosong atau berisi ratu) dan mencoba setiap kemungkinan kombinasi penempatan ratu di seluruh sel papan (NxN) tanpa mempedulikan aturan baris atau kolom sejak awal. Implementasi algoritma ini dapat dilihat pada Kode \ref{lst:bf_murni}.
+
+\begin{lstlisting}[caption={Brute force murni}, label={lst:bf_murni}]
+int totalSize = n * n;
+while (true)
+{
+    if (stopRequested)
+        break;
+
+    recordIteration();
+
+    if (board.isValidWholeBoard())
+    {
+        solutionFound = true;
+        break;
+    }
+
+    bool keepGoing = true;
+
+    for (int k = totalSize - 1; k >= 0 && keepGoing; k--)
+    {
+        int row = k / n;
+        int col = k % n;
+
+        if (board.getGrid()[row][col] == 0)
+        {
+            board.placeQueen(row, col);
+            keepGoing = false;
+        }
+        else
+        {
+            board.removeQueen(row, col);
+        }
+    }
+
+    if (keepGoing)
+    {
+        break;
+    }
+}
+\end{lstlisting}
+
+\textbf{Kompleksitas Algoritma : $$O(2^{N^2})$$}
+Algoritma ini memiliki kompleksitas eksponensial yang sangat tinggi karena memperlakukan papan permainan sebagai sebuah bilangan biner raksasa.
+
+\textbf{Langkah - Langkah}
+
+Algoritma dimulai dari papan keadaan kosong dan sudah memiliki region warna. Selanjutnya menghitung total sel yaitu \texttt{totalSize = n*n}.
+
+Program masuk ke loop yang merepresentasikan satu siklus pengecekan papan dengan jumlah iterasi pengecekan di hitung di variabel \texttt{iterationCount}.
+
+Pada setiap iterasi, program memanggil \texttt{board.isValidWholeBoard()}. Jika konfigurasi papan saat ini valid (memenuhi aturan warna, baris, kolom, dan tidak bersinggungan), maka solusi dianggap ditemukan (solutionFound = true), dan proses berhenti.
+
+Jika ternyata konfigurasi papan belum valid, algoritma akan membuat konfigurasi papan baru. Caranya mirip dengan cara kerja penambahan angka biner. Program melakukan mengecek sel dari posisi paling akhir (pojok kanan bawah) mundur ke posisi awal (pojok kiri atas): Jika sel kosong (0) maka tempatkan ratu di sana (\texttt{placeQueen}), lalu hentikan pemindaian untuk iterasi ini. Jika sel terisi ratu (1) hapus ratu di sana (\texttt{removeQueen}) dan lanjutkan pemindaian ke sel sebelumnya.
+
+Mekanisme ini memastikan bahwa algoritma menelusuri setiap kombinasi penempatan ratu yang mungkin ada, mulai dari 0 ratu hingga papan penuh.
+
+\subsubsection{Algoritma Brute Force Berbasis Permutasi}
+Pendekatan ini jauh lebih teroptimasi dibandingkan metode pertama. Algoritma ini membatasi ruang pencarian dengan asumsi dasar: Setiap baris pasti memiliki tepat satu ratu. Algoritma ini digunakan di mode efisien.
+
+\begin{lstlisting}[caption={Brute force permutasi}, label={lst:bf_perm}]
+vector<int> permutation(n);
+for (int i = 0; i < n; i++)
+{
+    permutation[i] = i;
+}
+
+do
+{
+    if (stopRequested)
+        break;
+
+    recordIteration();
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            board.removeQueen(i, j);
+        }
+    }
+
+    for (int row = 0; row < n; row++)
+    {
+        board.placeQueen(row, permutation[row]);
+    }
+
+    if (board.isValidWholeBoard())
+    {
+        solutionFound = true;
+        break;
+    }
+} while (next_permutation(permutation.begin(), permutation.end()));
+\end{lstlisting}
+
+\textbf{Kompleksitas Algoritma : $$O(N! \times N^2)$$}
+Algoritma ini memiliki kompleksitas faktorial ($N!$). Kompleksitas total menjadi $$O(N! \times N^2)$$ berasal dari jumlah permutasi, sedangkan $N^2$ berasal dari proses validasi yang dilakukan di tiap iterasi.
+
+\textbf{Langkah - Langkah}
+
+Algoritma memulai dengan membuat sebuah array berisi urutan kolom: $[0, 1, 2, ..., N-1]$. Array ini merepresentasikan posisi kolom ratu untuk setiap baris. Contoh: Jika indeks ke-0 bernilai 2, berarti pada Baris 0, ratu diletakkan di Kolom 2. 
+
+Selanjutnya, program memasuki siklus pencarian utama menggunakan struktur perulangan \texttt{do...while} yang memanfaatkan fungsi \texttt{std::next\_permutation}. Fungsi pustaka standar ini bertugas untuk menghasilkan kombinasi urutan unik berikutnya secara leksikografis dari array tersebut, misalnya mengubah urutan dari $[0, 1, 2]$ menjadi $[0, 2, 1]$, lalu $[1, 0, 2]$, dan seterusnya.
+
+Pada setiap iterasi baru, sistem melakukan rekonstruksi papan dengan terlebih dahulu membersihkan seluruh penempatan ratu sebelumnya. Ratu kemudian ditempatkan kembali sesuai dengan konfigurasi array permutasi yang sedang aktif, di mana baris ke-$i$ akan diisi ratu pada kolom yang ditunjukkan oleh nilai elemen ke-$i$ dari array. Pendekatan ini secara otomatis menjamin bahwa tidak ada dua ratu dalam satu baris maupun satu kolom yang sama, karena setiap angka dalam array bersifat unik. 
+
+Setelah penempatan selesai, program memvalidasi konfigurasi dengan memanggil fungsi \texttt{board.isValidWholeBoard()}. Mengingat aturan baris dan kolom telah terpenuhi secara implisit oleh logika permutasi, fungsi validasi ini secara efektif hanya memeriksa pelanggaran terhadap aturan wilayah warna dan persinggungan diagonal antar ratu. Jika konfigurasi terbukti valid, status solusi ditemukan akan diaktifkan dan proses pencarian dihentikan.
+
+\section{Uji Coba Program}
+
+\begin{longtable}{|p{2cm}|c|c|}
+\caption{Tabel Hasil Uji Coba Import .txt}
+\label{tab:hasil_uji_import_txt} \\
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endhead
+
+\small Valid 4x4, Warna $= N$ &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/valid_4x4.png}
+    \small {valid\_4x4.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/valid_4x4_o.png}} \\
+\hline
+
+\small Valid NxN, Warna $< N$ &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/warna_kurang.png}
+    \small {warna\_kurang.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/warna_kurang_o.png}} \\
+\hline
+
+\small Valid NxN, Warna $> N$ &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/warna_lebih.png}
+    \small {warna\_lebih.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/warna_lebih_o.png}} \\
+\hline
+
+\small Tidak $NxN$ &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/not_nxn.png}
+    \small {not\_nxn.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/not_nxn_o.png}} \\
+\hline
+
+\small Karakter Invalid &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/invalid_char.png}
+    \small {invalid\_char.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/invalid_char_o.png}} \\
+\hline
+
+\small File Kosong &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/kosong.png}
+    \small {kosong.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/kosong_o.png}} \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2cm}|c|c|}
+\caption{Tabel Hasil Uji Coba Import Image}
+\label{tab:hasil_uji_import_image} \\
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endhead
+
+\small Valid Image, Board Size = N, file validN.png semua&
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/validN.png}} & 
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/validN_o.png}} \\
+\hline
+
+\small Valid Image, Board Size = 0 &
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/BS_0.png}} & 
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/BS_0_o.png}} \\
+\hline
+
+\small Valid Image, Board Size $\neq$ N &
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/invalidN.png}} & 
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/invalidN_o.png}} \\
+\hline
+
+\small Selection terlalu kecil &
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/sel_small.png}} & 
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/sel_small_o.png}} \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2cm}|c|c|}
+\caption{Tabel Hasil Uji Coba Input Manual}
+\label{tab:hasil_uji_input_manual} \\
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endhead
+
+\small Semua sel diwarnai, input manual sesuai foto semua &
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/colored_all.png}} & 
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/colored_all_o.png}} \\
+\hline
+
+\small Ada sel kosong &
+\raisebox{-0.5\height}{\includegraphics[width=0.4\linewidth]{testcase/ada_kosong.png}} & 
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/ada_kosong_o.png}} \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2cm}|c|c|}
+\caption{Tabel Hasil Uji Coba Solver}
+\label{tab:hasil_uji_solver} \\
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endhead
+
+\small Puzzle Ada Solusi &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/valid_4x4.png}
+    \small {valid\_4x4.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/solver_valid_o.png}} \\
+\hline
+
+\small Puzzle Tidak Ada Solusi &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/no_solution.png}
+    \small {no\_solution.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/no_solution_o.png}} \\
+\hline
+
+\small Stop Solver &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/8x8.png}
+    \small {8x8.txt}
+\end{minipage}
+&
+\raisebox{-0.5\height}{\includegraphics[width=0.5\linewidth]{testcase/8x8_o.png}} \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2cm}|c|c|}
+\caption{Tabel Hasil Uji Saver .txt}
+\label{tab:hasil_uji_saver_txt} \\
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endhead
+
+\small Puzzle Ada Solusi &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/valid_4x4.png}
+    \small {valid\_4x4.txt}
+\end{minipage}
+&
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/saver_txt_ada_o.png}
+    \small {saver\_txt\_ada\_o.txt}
+\end{minipage}\\
+\hline
+
+\small Puzzle Tidak Ada Solusi &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/no_solution.png}
+    \small {no\_solution.txt}
+\end{minipage}
+&
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/saver_txt_no_o.png}
+    \small {saver\_txt\_no\_o.txt}
+\end{minipage}\\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2cm}|c|c|}
+\caption{Tabel Hasil Uji Saver Image}
+\label{tab:hasil_uji_saver_image} \\
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Deskripsi Kasus} & 
+\textbf{Masukan (Input)} & 
+\textbf{Keluaran (Output)} \\
+\hline
+\endhead
+
+\small Puzzle Ada Solusi &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/valid_4x4.png}
+    \small {valid\_4x4.txt}
+\end{minipage}
+&
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/saver_img_ada_o.png}
+    \small {saver\_img\_ada\_o.png}
+\end{minipage}\\
+\hline
+
+\small Puzzle Tidak Ada Solusi &
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/no_solution.png}
+    \small {no\_solution.txt}
+\end{minipage}
+&
+\begin{minipage}{0.18\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{testcase/saver_img_no_o.png}
+    \small {saver\_img\_no\_o.png}
+\end{minipage}\\
+\hline
+
+\end{longtable}
+
+\newpage
+\appendix
+
+\section{Lampiran}
+
+\subsection{Pranala Ke Repositori}
+
+\href{https://github.com/mhps-null/Tucil1_13524053}{https://github.com/mhps-null/Tucil1\_13524053}
+
+\subsection{Pernyataan}
+
+\fbox{
+\parbox{0.8\linewidth}{
+Tugas ini disusun sepenuhnya tanpa bantuan kecerdasan buatan (Generative AI), melainkan hasil pemikiran dan analisis mandiri.
+
+\begin{flushright}
+    \includegraphics[width=0.25\linewidth]{TTD_HARIS.png} \\
+    \small Muhammad Haris Putra Sulastianto
+\end{flushright}
+
+}
+}
+
+\subsection{Tabel Spesifikasi Tugas Kecil}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{8pt}
+
+\begin{tabular}{|c|p{8cm}|c|c|}
+\hline
+\textbf{No} & \centering\textbf{Poin} & \textbf{Ya} & \textbf{Tidak} \tabularnewline
+\hline
+
+1 & Program berhasil di kompilasi tanpa kesalahan &$\checkmark$& \\
+\hline
+
+2 & Program berhasil di jalankan &$\checkmark$& \\
+\hline
+
+3 & Solusi yang diberikan program benar dan mematuhi aturan permainan &$\checkmark$& \\
+\hline
+
+4 & Program dapat membaca masukan berkas .txt serta menyimpan solusi dalam berkas .txt &$\checkmark$& \\
+\hline
+
+5 & Program memiliki Graphical User Interface (GUI) &$\checkmark$& \\
+\hline
+
+6 & Program dapat menyimpan solusi dalam bentuk file gambar &$\checkmark$& \\
+\hline
+
+\end{tabular}
+
+\end{table}
+
+\subsection{Lampiran Kode Program dalam C++}
+
+\subsubsection{main.cpp}
+\begin{lstlisting}
+#include <QApplication>
+#include "mainwindow.h"
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    MainWindow w;
+    w.show();
+
+    return app.exec();
+}
+\end{lstlisting}
+
+\subsubsection{Board.cpp}
+\begin{lstlisting}
+#include "Board.h"
+
+Board::Board(int n, const vector<vector<int>> &color)
+    : n(n), grid(n, vector<int>(n, 0)), color(color) {}
+
+void Board::placeQueen(int row, int col)
+{
+    grid[row][col] = 1;
+}
+
+void Board::removeQueen(int row, int col)
+{
+    grid[row][col] = 0;
+}
+
+bool Board::isValidWholeBoard() const
+{
+    // queen
+    int qCount = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                qCount++;
+            }
+        }
+    }
+
+    if (qCount != n)
+    {
+        return false;
+    }
+
+    // row
+    for (int i = 0; i < n; i++)
+    {
+        int count = 0;
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                count++;
+                if (count > 1)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (count != 1)
+        {
+            return false;
+        }
+    }
+
+    // column
+    for (int j = 0; j < n; j++)
+    {
+        int count = 0;
+        for (int i = 0; i < n; i++)
+        {
+            if (grid[i][j] == 1)
+            {
+                count++;
+                if (count > 1)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (count != 1)
+        {
+            return false;
+        }
+    }
+
+    // adjacent diagonally
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                if (i < n - 1 && j < n - 1 && grid[i + 1][j + 1] == 1)
+                {
+                    return false;
+                }
+                if (i < n - 1 && j > 0 && grid[i + 1][j - 1] == 1)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // color
+    int maxColorId = countColorId();
+    vector<int> countColor(maxColorId, 0);
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (grid[i][j] == 1)
+            {
+                int c = color[i][j];
+                countColor[c]++;
+
+                if (countColor[c] != 1)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    for (int c = 0; c < maxColorId; c++)
+    {
+        if (countColor[c] != 1)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+int Board::countColorId() const
+{
+    set<int> colorId;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            colorId.insert(color[i][j]);
+        }
+    }
+
+    return colorId.size();
+}
+
+// getter grid
+const vector<vector<int>> &Board::getGrid() const
+{
+    return grid;
+}
+
+// getter color
+const vector<vector<int>> &Board::getColor() const
+{
+    return color;
+}
+
+// getter size
+int Board::getSize() const
+{
+    return n;
+}
+
+\end{lstlisting}
+
+\subsubsection{Solver.cpp}
+\begin{lstlisting}
+#include "Solver.h"
+
+Solver::Solver(const Board &board, bool efficientMode)
+    : board(board), efficientMode(efficientMode) {}
+
+void Solver::solve()
+{
+    QElapsedTimer timer;
+    timer.start();
+
+    frameTimer.start();
+
+    int n = board.getSize();
+
+    if (!efficientMode)
+    {
+        int totalSize = n * n;
+        while (true)
+        {
+            if (stopRequested)
+                break;
+
+            recordIteration();
+
+            if (board.isValidWholeBoard())
+            {
+                solutionFound = true;
+                break;
+            }
+
+            bool keepGoing = true;
+
+            for (int k = totalSize - 1; k >= 0 && keepGoing; k--)
+            {
+                int row = k / n;
+                int col = k % n;
+
+                if (board.getGrid()[row][col] == 0)
+                {
+                    board.placeQueen(row, col);
+                    keepGoing = false;
+                }
+                else
+                {
+                    board.removeQueen(row, col);
+                }
+            }
+
+            if (keepGoing)
+            {
+                break;
+            }
+        }
+    }
+    else
+    {
+        vector<int> permutation(n);
+        for (int i = 0; i < n; i++)
+        {
+            permutation[i] = i;
+        }
+
+        do
+        {
+            if (stopRequested)
+                break;
+
+            recordIteration();
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    board.removeQueen(i, j);
+                }
+            }
+
+            for (int row = 0; row < n; row++)
+            {
+                board.placeQueen(row, permutation[row]);
+            }
+
+            if (board.isValidWholeBoard())
+            {
+                solutionFound = true;
+                break;
+            }
+        } while (next_permutation(permutation.begin(), permutation.end()));
+    }
+    qint64 time = timer.elapsed();
+
+    if (!solutionFound)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                board.removeQueen(i, j);
+            }
+        }
+    }
+
+    emit finished(board, iterationCount, solutionFound, time);
+}
+
+void Solver::recordIteration()
+{
+    iterationCount++;
+
+    if (frameTimer.elapsed() >= 30)
+    {
+        emit boardUpdated(board, iterationCount);
+        frameTimer.restart();
+    }
+
+    emit progress(iterationCount);
+};
+
+const Board &Solver::getBoard() const
+{
+    return board;
+};
+
+long long Solver::getIterationCount() const
+{
+    return iterationCount;
+}
+
+bool Solver::getSolFound() const
+{
+    return solutionFound;
+}
+
+\end{lstlisting}
+
+\end{document}

@@ -56,12 +56,15 @@ Ekstrak folder /bin sesuai sistem operasi yang digunakan:
 
 Jalankan executable:
 
-- Windows: Tucil1_13524053.exe
+- Windows: `Tucil1_13524053.exe`
 - Linux / WSL: Jalankan melalui terminal `./Tucil1_13524053`
 
 ### Catatan
 
-- Pada Linux/WSL, pastikan file memiliki permission executable: `chmod +x Tucil1_13524053`
+- Pada Linux/WSL, pastikan file memiliki permission executable: 
+```bash
+chmod +x Tucil1_13524053
+```
 - Pada WSL, GUI hanya berjalan jika menggunakan WSL2 dengan WSLg atau X server.
 
 ## Cara Kompilasi Program
@@ -70,15 +73,46 @@ Program dapat dikompilasi secara native pada masing-masing sistem operasi menggu
 
 ### Windows (Qt 6.10.2 MinGW 64-bit)
 
-1. Pastikan environment variable berikut sudah diset: `set CMAKE_PREFIX_PATH=C:\Qt\6.10.2\mingw_64`
-2. Kemudian dari root project jalankan: `cmake -S . -B build -G Ninja` `cmake --build build`
+1. Pastikan environment variable berikut sudah diset: 
+```bash
+set CMAKE_PREFIX_PATH= <path>
+// ubah path sesuai lokasi Qt di komputer anda
+// default: "C:\Qt\6.10.2\mingw_64"
+```
+
+2. Kemudian dari root project jalankan:
+```bash 
+cmake -S . -B build -G Ninja
+``` 
+```bash
+cmake --build build
+```
+
 3. Executable akan dihasilkan di folder: `build/`
-4. Untuk menjalankan di Windows tanpa instalasi Qt, lakukan deployment: `cd build` `C:\Qt\6.10.2\mingw_64\bin\windeployqt.exe Tucil1_13524053.exe`
+4. Untuk menjalankan di Windows tanpa instalasi Qt, lakukan deployment: 
+```bash
+cd build
+```
+```bash
+C:\Qt\6.10.2\mingw_64\bin\windeployqt.exe Tucil1_13524053.exe
+```
 
 ### Linux / WSL
 
-1. Install dependency (Ubuntu-based): `sudo apt update` `sudo apt install cmake ninja-build qt6-base-dev g++`
-2. Build dari root project: `cmake -S . -B build -G Ninja` `cmake --build build`
+1. Install dependency (Ubuntu-based): 
+```bash
+sudo apt update
+```
+```bash
+sudo apt install cmake ninja-build qt6-base-dev g++
+```
+2. Build dari root project: 
+```bash 
+cmake -S . -B build -G Ninja
+```
+```
+cmake --build build
+```
 3. Executable akan dihasilkan di: `build/Tucil1_13524053`
 
 ## Cara Menggunakan Program
